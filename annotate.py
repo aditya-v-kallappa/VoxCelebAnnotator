@@ -102,6 +102,10 @@ class Annotate:
                 annotations['emotion'] = None
         
         return annotations
+
+    
+    def __call__(self, audio_file):
+        return self.annotate_audio(audio_file)
             
             
 

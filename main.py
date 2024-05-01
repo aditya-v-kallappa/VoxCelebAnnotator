@@ -17,15 +17,24 @@ def main(args):
 
     annotate = Annotate(args)
 
+    all_annotations = []
     for i, data in enumerate(vox_dataloader):
-        audio_file, label_info = annotate(audio_file)
+        audio_file, label_info = data
+        annotations = annotate(audio_file)
 
+        annotations['label_info'] = label_info
+        all_annotations.append(annotations)
 
+     with open(f'{args.output_path}/annotations.jsonl', 'w') as f:
+        for annotation in all_annotations:
+            json.dump(annotation, f)
+            f.write('\n')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="VOXCeleb1 Annotator")
     parser.add_argument("--root_path", type=str, help="Root Path of VOX Celeb1 Dataset", required=True)
-    parser.add_argument("--vox_metadata_path", type=str, help="Path to vox1_vox1_meta.csv file", default=None)
+    parser.add_argument("--vox_metadata_path", type=str, help="Path to vox1_vox1_meta.csv file")
+    parser.add_argument("--output_path", type=str, help="Directory to save the output annotation file", required=True)
     parser.add_argument(
         "--asr_model", 
         type=str, 
@@ -67,6 +76,7 @@ if __name__ == "__main__":
         action=store_true,
         help="Disable alignment pipeline"
     )
+
 
     args = parser.parse_args()
     main(args)
