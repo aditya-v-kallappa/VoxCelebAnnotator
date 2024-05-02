@@ -24,7 +24,7 @@ class Annotate:
         samples, sample_rate = sf.read(f'{audio_file}')
         duration = len(samples) / sample_rate
 
-        return {'sample_rate (Hz)': sample_rate, 'length (s)': duration}
+        return {'audio_file_path': audio_file, 'sample_rate (Hz)': sample_rate, 'length (s)': duration}
 
     def get_transcript(self,  audio_file):
 
