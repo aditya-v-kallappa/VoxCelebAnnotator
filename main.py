@@ -13,33 +13,23 @@ from dataloader import VOXDataset
 def main(args):
 
     vox_dataset = VOXDataset(args)
-    vox_dataloader = DataLoader(vox_dataset, batch_size=1, shuffle=False)
     print(f"Loaded {len(vox_dataset)} files")
-    vox_dataloader = DataLoader(vox_dataset, batch_size=1, shuffle=False)
-
     annotate = Annotate(args)
 
     all_annotations = []
     # for i, data in enumerate(vox_dataloader):
-    for i in range(0, len(vox_dataset)):
+    for i in tqdm.tqdm(range(0, len(vox_dataset))):
         data = vox_dataset[i]
         audio_file, label_info = data['audio_path'], data['label_info']
-        
-        print("insie main")
-        print(audio_file)
-        print(label_info)
-
         annotations = annotate(audio_file)
-
-
-
         annotations['label_info'] = label_info
         all_annotations.append(annotations)
-
-    with open(f'{args.output_path}/annotations.jsonl', 'w') as f:
-        for annotation in all_annotations:
-            json.dump(annotation, f)
-            f.write('\n')
+        
+        #save each annotation 
+        with open(f'{args.output_path}/annotations.jsonl', 'w') as f:
+            for annotation in all_annotations:
+                json.dump(annotation, f)
+                f.write('\n')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="VOXCeleb1 Annotator")
@@ -62,9 +52,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--fast_transcript", 
-        type=bool, 
+        action='store_true', 
         help="Enabling this will not save probabilities and other information of transcription",
-        default=False,
     )
     parser.add_argument(
         "--emotion_model", 
