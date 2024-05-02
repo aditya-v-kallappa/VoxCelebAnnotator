@@ -14,18 +14,29 @@ def main(args):
 
     vox_dataset = VOXDataset(args)
     vox_dataloader = DataLoader(vox_dataset, batch_size=1, shuffle=False)
+    print(f"Loaded {len(vox_dataset)} files")
+    vox_dataloader = DataLoader(vox_dataset, batch_size=1, shuffle=False)
 
     annotate = Annotate(args)
 
     all_annotations = []
-    for i, data in enumerate(vox_dataloader):
-        audio_file, label_info = data
+    # for i, data in enumerate(vox_dataloader):
+    for i in range(0, len(vox_dataset)):
+        data = vox_dataset[i]
+        audio_file, label_info = data['audio_path'], data['label_info']
+        
+        print("insie main")
+        print(audio_file)
+        print(label_info)
+
         annotations = annotate(audio_file)
+
+
 
         annotations['label_info'] = label_info
         all_annotations.append(annotations)
 
-     with open(f'{args.output_path}/annotations.jsonl', 'w') as f:
+    with open(f'{args.output_path}/annotations.jsonl', 'w') as f:
         for annotation in all_annotations:
             json.dump(annotation, f)
             f.write('\n')
@@ -41,8 +52,8 @@ if __name__ == "__main__":
         help="A Whisper variant supported by Faster-Whisper - https://github.com/SYSTRAN/faster-whisper/",
         default='large-v2'
     )
-    parser.add_argument("--device", type=str, help="Device to run the pipeline on (cpu or cuda)", default='cpu', options=['cpu', 'cuda'])
-    parser.add_argument("--compute_type", type=str, help="Precision to run whisper", default='int8', options=['int8', 'fp16', 'fp32'])
+    parser.add_argument("--device", type=str, help="Device to run the pipeline on (cpu or cuda)", default='cpu', choices=['cpu', 'cuda'])
+    parser.add_argument("--compute_type", type=str, help="Precision to run whisper", default='int8', choices=['int8', 'float16', 'float32'])
     parser.add_argument(
         "--batch_size", 
         type=int, 
@@ -52,28 +63,28 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fast_transcript", 
         type=bool, 
-        help="Enabling this will not save probabilities and other information of transcription"
+        help="Enabling this will not save probabilities and other information of transcription",
         default=False,
     )
     parser.add_argument(
-        "--fast_transcript", 
-        type=bool, 
-        help="Enabling this will not save probabilities and other information of transcription"
-        default=False,
+        "--emotion_model", 
+        type=str, 
+        help="HF emotion model",
+        default="bhadresh-savani/bert-base-uncased-emotion",
     )
     parser.add_argument(
         "--disable_asr",
-        action=store_true,
+        action='store_true',
         help="Disable ASR pipeline"
     )
     parser.add_argument(
         "--disable_alignment",
-        action=store_true,
+        action='store_true',
         help="Disable alignment pipeline"
     )
     parser.add_argument(
         "--disable_emotion",
-        action=store_true,
+        action='store_true',
         help="Disable alignment pipeline"
     )
 

@@ -9,13 +9,13 @@ class VOXDataset(Dataset):
         self.root_path = args.root_path
         speaker_metadata_path = args.vox_metadata_path if args.vox_metadata_path else f"{self.root_path}/vox1_vox1_meta.csv"
         self.speaker_metadata = pd.read_csv(f"{speaker_metadata_path}", sep='\t')
-        self.speaker_map = self.get_speaker_map(self.speaker_metadata)
 
         self.wav_files = glob.glob(f"{self.root_path}/wav/**/*.wav", recursive=True)
-        self.txt_files = glob.glob(f"{self.root_path}/txt/**/*.txt", recursive=True)
+        self.txt_files = [wav.replace("/wav/", "/txt/").replace(".wav", ".txt") for wav in self.wav_files]
+
 
     def __len__(self):
-        return len(wav_files)
+        return len(self.wav_files)
 
     def extract_metadata(self, speaker_id):
         return self.speaker_metadata[self.speaker_metadata['VoxCeleb1 ID'] == speaker_id]
@@ -42,7 +42,7 @@ class VOXDataset(Dataset):
                 if line.startswith('Identity'):
                     label_info['speaker_id'] = line.split(':')[1].strip()
                 elif line.startswith('Reference'):
-                    label_info['reference'] = line.split(':')[1].strip()
+                    label_info['yt_link'] = line.split(':')[1].strip()
                 elif line.startswith('Offset'):
                     label_info['offset'] = line.split(':')[1].strip()
                 elif line.startswith('FV Conf'):
@@ -65,6 +65,5 @@ class VOXDataset(Dataset):
 
         audio = self.wav_files[index]
         label_info = self.extract_info_from_text_file(self.txt_files[index])
-
-        return audio, label_info
+        return {'audio_path': audio, 'label_info': label_info}
 
